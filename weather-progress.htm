@@ -419,7 +419,7 @@ function prepareComparisonData(data, startDate) {
 //グラフデータの抽出
 function handleFileSelect() {
     // fetchでCSV取得（Shift_JIS対応）
-    fetch('出雲日別値.csv')
+    fetch('斐川日別値.csv')
         .then(response => response.arrayBuffer())
         .then(buffer => {
             const decoder = new TextDecoder('shift-jis');
