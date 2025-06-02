@@ -406,7 +406,7 @@ window.addEventListener('DOMContentLoaded', function() {
   updateDateFields();
 
   // その後、CSVをfetchして処理
-  fetch('出雲日別値.csv')
+  fetch('斐川日別値.csv')
     .then(response => {
       if (!response.ok) throw new Error('CSVが見つかりません');
       return response.arrayBuffer();
@@ -469,7 +469,7 @@ window.addEventListener('DOMContentLoaded', function() {
 });
         
 window.addEventListener('DOMContentLoaded', function() {
-  fetch('出雲日別値.csv')
+  fetch('斐川日別値.csv')
     .then(response => {
       if (!response.ok) throw new Error('CSVが見つかりません');
       return response.arrayBuffer();
