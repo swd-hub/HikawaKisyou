@@ -406,7 +406,7 @@ window.addEventListener('DOMContentLoaded', function() {
   updateDateFields();
 
   // その後、CSVをfetchして処理
-  fetch('斐川日別値.csv')
+  fetch('出雲日別値.csv')
     .then(response => {
       if (!response.ok) throw new Error('CSVが見つかりません');
       return response.arrayBuffer();
@@ -469,7 +469,7 @@ window.addEventListener('DOMContentLoaded', function() {
 });
         
 window.addEventListener('DOMContentLoaded', function() {
-  fetch('斐川日別値.csv')
+  fetch('出雲日別値.csv')
     .then(response => {
       if (!response.ok) throw new Error('CSVが見つかりません');
       return response.arrayBuffer();
@@ -505,25 +505,8 @@ window.addEventListener('DOMContentLoaded', function() {
     .catch(error => {
       document.getElementById('csv-date-range').textContent = error.message;
     });
-});
-        
-window.addEventListener('DOMContentLoaded', function() {
-  // fetchで同階層のCSVファイルを読み込む
-  fetch('斐川日別値.csv')
-    .then(response => {
-      if (!response.ok) throw new Error('CSVが見つかりません');
-      return response.text();
-    })
-    .then(csvText => {
-      // ここで既存の処理にcsvTextを渡す
-      // 例: parseCSVAndAnalyze(csvText);
-      parseCSVAndAnalyze(csvText);
-    })
-    .catch(error => {
-      alert(error.message);
-    });
-});
-        
+});     
+       
 function updateDateFields() {
  const currentDate = new Date();
  const currentYear = currentDate.getFullYear();
