@@ -256,7 +256,7 @@ input:checked + .slider:before {
         <!--button onclick="window.open('images/WetherOption.png', '_blank')">過去の気象データ・ダウンロードで選ぶ表示オプション</button-->
     </div>
     <br>
-   <h5 id="csv-date-range">CSVの日付範囲を取得中...</h5>
+   <h5 id="csv-date-range">気象データの日付範囲を取得中...</h5>
 
     <div class="top-row-container">
         <form class="input-form">
@@ -426,7 +426,7 @@ window.addEventListener('DOMContentLoaded', function() {
         const day = String(d.getDate()).padStart(2, '0');
         return `${y}-${m}-${day}`;
       }
-      document.getElementById('csv-date-range').textContent = `CSVの日付範囲：${formatDate(minDate)} ～ ${formatDate(maxDate)}`;
+      document.getElementById('csv-date-range').textContent = `気象データの日付範囲：${formatDate(minDate)} ～ ${formatDate(maxDate)}`;
 
       // ↓↓↓ ここからグラフや表の更新処理 ↓↓↓
 
