@@ -100,7 +100,7 @@ label {
         <button onclick="window.open('https://www.data.jma.go.jp/gmd/risk/obsdl/index.php', '_blank')">気象庁のサイトを開く</button>
     </div>
     <br>
-    <h5>※CSVファイル（例: 出雲日別値.csv）は同一ディレクトリに置いてください</h5>
+    <h5>※CSVファイル（例: 斐川日別値.csv）は同一ディレクトリに置いてください</h5>
     <div class="top-row-container">
         <form class="input-form" onsubmit="return false;">
             <h2>条件入力</h2>
@@ -162,7 +162,7 @@ let loadedCSVData = null; // グローバル保持
 
 // fetchでCSV取得→ShiftJIS→parse
 function fetchAndProcessCSV() {
-    fetch('出雲日別値.csv')
+    fetch('斐川日別値.csv')
       .then(response => response.arrayBuffer())
       .then(arrayBuffer => {
         const utf8Text = shiftJISToUTF8(arrayBuffer);
