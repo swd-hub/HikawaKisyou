@@ -70,7 +70,7 @@ canvas {
   </style>
 </head>
 <body>
-  <h1 id="mainTitle">気象経過 出雲</h1>
+  <h1 id="mainTitle">気象経過 斐川</h1>
 
   <!-- ラベルをボタン風にしてファイル選択を起動 -->
   <input type="file" id="csvFileInput" accept=".csv">
@@ -103,7 +103,7 @@ document.getElementById('csvFileInput').addEventListener('change', function(e) {
 
 async function loadCSVWithFallback() {
   try {
-    const response = await fetch('出雲日別値.csv');
+    const response = await fetch('斐川日別値.csv');
     const arrayBuffer = await response.arrayBuffer();
     const utf8Content = shiftJISToUTF8(arrayBuffer);
     csvData = parseCSV(utf8Content);
@@ -294,3 +294,4 @@ function drawAnnualCharts(labels, avgTemps, maxTemps, minTemps, precSums, sunSum
 </script>
 </body>
 </html>
+
