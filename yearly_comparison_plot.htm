@@ -92,7 +92,7 @@ document.getElementById('csvFileInput').addEventListener('change', function(e) {
 
   // ファイル名の冒頭（拡張子除く）を取得してタイトル更新
   const fileName = file.name.replace(/\.[^/.]+$/, ''); // 拡張子除去
-  const locationName = fileName.split(/日別値|_/)[0]; // 「出雲日別値.csv」→「出雲」
+  const locationName = fileName.split(/日別値|_/)[0]; // 「斐川日別値.csv」→「斐川」
   document.getElementById('mainTitle').textContent = `気象経過 ${locationName}`;
 
   reader.onload = function(event) {
@@ -121,7 +121,7 @@ document.getElementById('csvFileInput').addEventListener('change', function(e) {
 
 async function loadCSVWithFallback() {
   try {
-    const filePath = '出雲日別値.csv'; // 読み込むCSVファイル名
+    const filePath = '斐川日別値.csv'; // 読み込むCSVファイル名
     const response = await fetch(filePath);
     const arrayBuffer = await response.arrayBuffer();
     const utf8Content = shiftJISToUTF8(arrayBuffer);
@@ -320,4 +320,5 @@ function drawAnnualCharts(labels, avgTemps, maxTemps, minTemps, precSums, sunSum
 </script>
 </body>
 </html>
+
 
