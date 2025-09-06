@@ -2,7 +2,7 @@
 <html lang="ja">
 <head>
   <meta charset="UTF-8">
-  <title>有効積算温度の到達日予測</title>
+  <title>有効積算温度の到達日</title>
   <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
   <style>
 body {
@@ -66,16 +66,20 @@ form, .input-panel {
   cursor: pointer;
   font-size: 14px;
 }
-.input-panel button:hover {
+.input-panel button:disabled {
+  background-color: #bbb;
+  cursor: not-allowed;
+}
+.input-panel button:hover:enabled {
   background-color: #45a049;
 }
 /* ===== レイアウト ===== */
 .container {
   display: flex;
   gap: 20px;
-  margin-top: 10px;     /* ← 20px → 10px に縮めた */
+  margin-top: 10px;
   flex-wrap: wrap;
-  align-items: flex-start; /* グラフと表の上端を揃える */
+  align-items: flex-start;
 }
 
 .table-container, .chart-container {
@@ -93,7 +97,7 @@ table {
   width: 100%;
   font-size: 14px;
   margin-top: 10px;
-  table-layout: fixed; /* 列幅を固定 */
+  table-layout: fixed;
 }
 th, td {
   border: 1px solid #ccc;
@@ -107,15 +111,14 @@ tr:nth-child(even) td {
   background: #fafafa;
 }
 .table-container {
-  max-width: 600px; /* 表の最大幅を制限 */
+  max-width: 600px;
   width: 100%;
-  margin: 0 auto;    /* 中央寄せ（任意） */
+  margin: 0 auto;
 }
 #resultTable {
   table-layout: fixed;
   width: 100%;
 }
-
 
 /* ===== チャート ===== */
 .chart-container {
@@ -128,7 +131,6 @@ tr:nth-child(even) td {
   height: auto !important;
 }
 
-
 /* ===== 印刷用 ===== */
 @media print {
   * { margin: 0; padding: 0; }
@@ -139,39 +141,27 @@ tr:nth-child(even) td {
     page-break-after: auto;
   }
 }
-
   </style>
 </head>
 <body>
-  <h2>有効積算温度の到達日表示</h2>
+<h2>有効積算温度の到達日表示</h2>
 
-  <div>
-    <br>
-    <!-- ファイル選択ボタンをfetch読み込みボタンに変更 -->
-    <button id="fetchCsvBtn">同フォルダの「斐川日別値.CSV」を読み込む</button>
-    <span id="csvStatus" style="margin-left:8px;color:#888;"></span>
-  </div>
-  <div>
-    <label>開始日: <input type="date" id="startDate"></label><br><br>
-    <label>目標積算温度(℃): <input type="number" id="targetTemp" value="1000"></label><br><br>
-    <label>有効温度下限(℃): <input type="number" id="tempMin" value="10"></label><br>
-    <label>有効温度上限(℃): <input type="number" id="tempMax" value="30"></label><br><br>
-    <label>
-      <input type="checkbox" id="useUpperLimit" checked>
-      上限超過は無効とする
-    </label>
-    <button onclick="analyze()">計算</button>
-  </div>
+<div>
+  <label>開始日: <input type="date" id="startDate"></label><br><br>
+  <label>目標積算温度(℃): <input type="number" id="targetTemp" value="1000"></label><br><br>
+  <label>有効温度下限(℃): <input type="number" id="tempMin" value="10"></label><br>
+  <label>有効温度上限(℃): <input type="number" id="tempMax" value="30"></label><br><br>
+  <label>
+    <input type="checkbox" id="useUpperLimit" checked>
+    上限超過は無効とする
+  </label>
+  <button id="analyzeBtn" disabled>計算</button>
+</div>
 
 <div class="container">
   <div class="table-container">
     <h3>年ごとの到達日一覧</h3>
     <table id="resultTable">
-      <colgroup>
-        <col style="width: 20%;">
-        <col style="width: 20%;">
-        <col style="width: 20%;">
-      </colgroup>
       <thead>
         <tr>
           <th>年</th>
@@ -179,9 +169,7 @@ tr:nth-child(even) td {
           <th>到達日</th>
         </tr>
       </thead>
-      <tbody>
-        <!-- データ行はJSなどで動的に追加 -->
-      </tbody>
+      <tbody></tbody>
     </table>
   </div>
   <div class="chart-container">
@@ -190,171 +178,162 @@ tr:nth-child(even) td {
 </div>
 
 <script>
-  let weatherData = [];
+let weatherData = [];
+let csvLoaded = false;
 
-  window.addEventListener("DOMContentLoaded", () => {
-    const now = new Date();
-    const currentYear = now.getFullYear();
-    const jan1 = new Date(currentYear, 0, 1);
-    const yyyy = jan1.getFullYear();
-    const mm = String(jan1.getMonth() + 1).padStart(2, "0");
-    const dd = String(jan1.getDate()).padStart(2, "0");
-    const formatted = `${yyyy}-${mm}-${dd}`;
-    document.getElementById("startDate").value = formatted;
+window.resultChart = null;
+
+// ページ読み込み時
+window.addEventListener("DOMContentLoaded", () => {
+  const now = new Date();
+  const yyyy = now.getFullYear();
+  document.getElementById("startDate").value = `${yyyy}-01-01`;
+
+  // 計算ボタン無効で開始
+  document.getElementById("analyzeBtn").disabled = true;
+
+  // サーバー上のCSVをfetch
+  fetch("斐川日別値.csv")
+    .then(response => {
+      if (!response.ok) throw new Error("CSVの取得に失敗");
+      return response.arrayBuffer(); // Shift-JIS → UTF-8用
+    })
+    .then(buffer => {
+      const text = new TextDecoder("shift-jis").decode(buffer);
+      weatherData = parseCSV(text);
+      csvLoaded = true;
+      document.getElementById("analyzeBtn").disabled = false; // 読み込みできたら有効
+
+      // 初回表示
+      const results = analyze();
+      updateTable(results);
+      updateChart(results);
+    })
+    .catch(err => {
+      console.error("CSV読み込みエラー:", err);
+      weatherData = [];
+      csvLoaded = false;
+      document.getElementById("analyzeBtn").disabled = true;
+    });
+
+  // 入力値変更でボタン有効化（データが読めていれば）
+  ["startDate","targetTemp","tempMin","tempMax","useUpperLimit"].forEach(id => {
+    document.getElementById(id).addEventListener("input", () => {
+      if (csvLoaded) document.getElementById("analyzeBtn").disabled = false;
+    });
   });
 
-  // fetchボタンでCSVを読み込む
-  document.getElementById('fetchCsvBtn').addEventListener('click', () => {
-    const status = document.getElementById('csvStatus');
-    status.textContent = "読込中...";
-    fetch('./斐川日別値.CSV')
-      .then(response => {
-        if (!response.ok) throw new Error("ファイルが見つかりません");
-        return response.arrayBuffer();
-      })
-      .then(buffer => {
-        // Shift-JISデコード
-        let text;
-        try {
-          text = new TextDecoder('shift_jis').decode(buffer);
-        } catch(e) {
-          // Firefoxなどでは 'sjis' も試す
-          text = new TextDecoder('sjis').decode(buffer);
-        }
-        weatherData = parseCSV(text);
-        if (weatherData.length > 0) {
-          status.textContent = "読込完了";
-        } else {
-          status.textContent = "データ無し";
-        }
-      })
-      .catch(err => {
-        status.textContent = "読込失敗: " + err.message;
-        weatherData = [];
-      });
+  // ボタン押下
+  document.getElementById("analyzeBtn").addEventListener("click", () => {
+    const results = analyze();
+    updateTable(results);
+    updateChart(results);
   });
+});
 
-  function parseCSV(text) {
-    const lines = text.trim().split("\n").map(l => l.replace(/\r$/, ''));
-    // 3行目（index 2）がヘッダ
-    if (lines.length < 3) {
-      alert("CSVの行数が不足しています");
-      return [];
-    }
-    const headers = lines[2].split(",");
-    const yearIndex = headers.findIndex(h => h === "年");
-    const monthIndex = headers.findIndex(h => h === "月");
-    const dayIndex = headers.findIndex(h => h === "日");
-    const tempIndex = headers.findIndex(h => h === "平均気温(℃)");
+// --- CSVパース ---
+function parseCSV(content) {
+  const lines = content.trim().split(/\r?\n/).filter(line => line.trim() !== "");
+  const dataLines = lines.slice(5); // データ本体は6行目以降
 
-    if ([yearIndex, monthIndex, dayIndex, tempIndex].includes(-1)) {
-      alert("CSVの列名が正しく認識できません");
-      return [];
-    }
+  return dataLines.map(line => {
+    const cols = line.split(",");
+    const num = (v) => {
+      const n = parseFloat(v);
+      return isNaN(n) ? null : n;
+    };
 
-    let data = [];
-    for (let i = 3; i < lines.length; i++) {
-      if (!lines[i].trim()) continue;
-      const cells = lines[i].split(",");
-      const year = parseInt(cells[yearIndex]);
-      const month = parseInt(cells[monthIndex]);
-      const day = parseInt(cells[dayIndex]);
-      const temp = parseFloat(cells[tempIndex]);
-      const date = new Date(year, month - 1, day);
+    const year = parseInt(cols[0]);
+    const month = parseInt(cols[1]);
+    const day = parseInt(cols[2]);
 
-      if (!isNaN(temp)) {
-        data.push({ date, temp });
-      }
-    }
-    return data;
-  }
+    return {
+      year,
+      month,
+      day,
+      date: new Date(year, month - 1, day),
+      temp: num(cols[3]),          // 平均気温
+      precipitation: num(cols[8]), // 降水量
+      sunshine: num(cols[13]),     // 日照時間
+      tmax: num(cols[18]),         // 最高気温
+      tmin: num(cols[23])          // 最低気温
+    };
+  });
+}
 
+// --- 集計 ---
 function analyze() {
-  if (weatherData.length === 0) {
-    alert("先にCSVを読み込んでください");
-    return;
+  if (!weatherData.length) {
+    alert("気象データが読み込まれていません");
+    return {};
   }
 
-  const startDateInput = new Date(document.getElementById("startDate").value);
-  const targetTemp = parseFloat(document.getElementById("targetTemp").value);
-  const tempMin = parseFloat(document.getElementById("tempMin").value);
-  const tempMax = parseFloat(document.getElementById("tempMax").value);
+  const startDate = new Date(document.getElementById("startDate").value);
+  const targetTemp = Number(document.getElementById("targetTemp").value);
+  const tempMin = Number(document.getElementById("tempMin").value);
+  const tempMax = Number(document.getElementById("tempMax").value);
   const useUpperLimit = document.getElementById("useUpperLimit").checked;
 
-  const startMonth = startDateInput.getMonth();
-  const startDay = startDateInput.getDate();
-
   const results = {};
-  const years = [...new Set(weatherData.map(d => d.date.getFullYear()))];
+  const years = [...new Set(weatherData.map(d => d.year))].sort((a,b)=>a-b);
 
   years.forEach(year => {
-    const startDate = new Date(year, startMonth, startDay);
-    let total = 0;
+    const start = new Date(year, startDate.getMonth(), startDate.getDate());
+    let accTemp = 0;
+    let reached = false;
     let days = 0;
-    let reachedDate = null;
+    let reachDate = null;
 
-    for (const row of weatherData) {
-      if (row.date < startDate) continue;
+    for (const rec of weatherData) {
+      if (rec.year !== year) continue;
+      if (rec.date < start) continue;
 
-      const rowYear = row.date.getFullYear();
-      if (rowYear !== year && rowYear !== year + 1) break; // 翌年まで許容
+      let t = rec.temp;
+      if (t === null) continue;
 
-      let effTemp = 0;
-      if (row.temp >= tempMin) {
-        let adjusted = row.temp;
+      if (t < tempMin) t = 0;
+      else if (useUpperLimit && t > tempMax) t = 0;
+      else t = Math.max(0, t - tempMin);
 
-        if (useUpperLimit && row.temp > tempMax) {
-          adjusted = tempMax;
-        } else if (!useUpperLimit && row.temp > tempMax) {
-          adjusted = NaN;
-        }
-
-        if (!isNaN(adjusted) && adjusted >= tempMin) {
-          effTemp = adjusted - tempMin;
-        }
-      }
-
-      total += effTemp;
+      accTemp += t;
       days++;
 
-      if (total >= targetTemp) {
-        reachedDate = new Date(startDate);
-        reachedDate.setDate(startDate.getDate() + days);
+      if (!reached && accTemp >= targetTemp) {
+        reached = true;
+        reachDate = rec.date;
         break;
       }
     }
 
-    results[year] = {
-      reached: !!reachedDate,
-      days: reachedDate ? days : null,
-      date: reachedDate
-    };
+    results[year] = reached ? { days, date: reachDate } : { days: null, date: null };
   });
 
-  // 表に出力
-  const table = document.getElementById("resultTable");
-  table.innerHTML = "<tr><th>年</th><th>到達日数</th><th>到達日</th></tr>";
-  const labels = [];
-  const values = [];
+  return results;
+}
 
-  for (const year of Object.keys(results).sort()) {
-    const r = results[year];
-    if (r.reached) {
-      const d = r.date;
-      const dStr =
-        d.getFullYear() + "-" +
-        (d.getMonth() + 1).toString().padStart(2, "0") + "-" +
-        d.getDate().toString().padStart(2, "0");
-      table.innerHTML += `<tr><td>${year}</td><td>${r.days}</td><td>${dStr}</td></tr>`;
-      labels.push(year);
-      values.push(r.days);
-    } else {
-      table.innerHTML += `<tr><td>${year}</td><td>—</td><td>未到達</td></tr>`;
-    }
-  }
+// --- 表の更新 ---
+function updateTable(results) {
+  const tbody = document.getElementById("resultTable").querySelector("tbody");
+  tbody.innerHTML = "";
+  Object.entries(results).forEach(([year, res]) => {
+    const tr = document.createElement("tr");
+    tr.innerHTML = `
+      <td>${year}</td>
+      <td>${res.days !== null ? res.days : "-"}</td>
+      <td>${res.date ? formatDate(res.date) : "-"}</td>
+    `;
+    tbody.appendChild(tr);
+  });
+}
 
-  // グラフ表示
+// --- グラフの更新 ---
+function updateChart(results) {
   const ctx = document.getElementById("chart").getContext("2d");
+
+  const labels = Object.keys(results);
+  const values = labels.map(year => results[year].days);
+
+  // 指定のグラフ仕様で描画
   if (window.resultChart) {
     window.resultChart.destroy();
   }
@@ -395,9 +374,15 @@ function analyze() {
     }
   });
 }
-</script>
 
+function formatDate(date) {
+  if (!(date instanceof Date)) date = new Date(date);
+  const y = date.getFullYear();
+  const m = String(date.getMonth() + 1).padStart(2, "0");
+  const d = String(date.getDate()).padStart(2, "0");
+  return `${y}/${m}/${d}`;
+}
+</script>
 
 </body>
 </html>
-
