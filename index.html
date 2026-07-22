@@ -83,7 +83,7 @@
 </head>
 <body>
   <button onclick="window.open('https://www.data.jma.go.jp/gmd/risk/obsdl/index.php', '_blank')">気象庁のサイトを開く</button>
-  <h1>気象データツール 一覧　斐川</h1>
+  <h1>気象データツール 一覧　出雲</h1>
   <ul>
     <li>
         <a href="weather-progress.htm" target="_blank">日別値　気象データ気象経過</a>
@@ -162,7 +162,19 @@
       <img src="images/annual-variation-effective-reachT.png" alt="画像" class="thumbnail" onclick="openModal(this)">
       <img src="images/annual-variation-effective-reachTable.png" alt="画像" class="thumbnail" onclick="openModal(this)">
     </li>
+    <li>
+      <a href="predict-effective-temperature-target.html" target="_blank">日別値　有効積算温度　目標到達予測</a>
+      <div class="description">実測の有効積算温度の推移から、直近の平均加算量をもとに目標とする有効積算温度への到達予定日を予測してグラフにします。</div>
+      <img src="images/predict-effective-temperature-targetTable.png" alt="画像" class="thumbnail" onclick="openModal(this)">
+      <img src="images/predict-effective-temperature-targetGraph.png" alt="画像" class="thumbnail" onclick="openModal(this)">
+    </li>
     
+        <li>
+      <a href="GeoTemp_Analyzer.htm" target="_blank">地上気温と地表面温度の分布と時系列変化</a>
+      <div class="description">アメダスとＪＡＸＡ衛星データを地図に表示します。</div>
+      <img src="images/GeoTemp_AnalyzerM.png" alt="画像" class="thumbnail" onclick="openModal(this)">
+      <img src="images/GeoTemp_AnalyzerG.png" alt="画像" class="thumbnail" onclick="openModal(this)">
+    </li>
    <li>
       <a href="nightlength_izumo.htm" target="_blank">天文API　夜間長の可視化(出雲)</a>
       <div class="description">長日、短日にかかわる夜間長を表とグラフにします。</div>
@@ -170,7 +182,8 @@
       <img src="images/nightlength_izumoC.png" alt="画像" class="thumbnail" onclick="openModal(this)">
     </li>       
        <li>
-      <a href="nightlength_izumoFetch.htm" target="_blank">昼間長と夜間長の可視化（出雲）</a>
+      <!-- a href="nightlength_izumoFetch.htm" target="_blank">昼間長と夜間長の可視化（出雲）</a-->
+      <a href="nightlength_izumoCSV.htm" target="_blank">昼間長と夜間長の可視化（出雲）</a>
       <div class="description">長日、短日にかかわる昼間長と夜間長を表とグラフにします。</div>
       <img src="images/nightlength_izumoTable.png" alt="画像" class="thumbnail" onclick="openModal(this)">
       <img src="images/nightlength_izumoC.png" alt="画像" class="thumbnail" onclick="openModal(this)">
